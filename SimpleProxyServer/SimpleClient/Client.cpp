@@ -1,8 +1,23 @@
 ﻿#include <iostream>
 #include <ws2tcpip.h>
+#include <string>
 
 #pragma comment (lib, "ws2_32.lib") 
 #pragma warning(disable:4996) 
+
+SOCKET connection;
+
+void ClientHandler() {
+	//std::string msg;
+	char msg[256];
+	while (true) {
+		//std::getline(std::cin, msg);
+		//int msg_size = msg.size();
+		//send(connection, (char*)&msg_size, sizeof(int), 0);
+		std::cin.getline(msg, sizeof(msg));
+		send(connection, msg, sizeof(msg), 0);
+	}
+}
 
 int main() {
 	// Initialization
@@ -13,26 +28,30 @@ int main() {
 
 	if (wsOk != 0) {
 		std::cerr << "Error!" << std::endl;
+		return 1;
 	}
 
 	// Binging
 	sockaddr_in address;
 	address.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
-	//InetPton(AF_INET, _T("192.168.1.1"), &address.sin_addr.s_addr);
-
 	address.sin_family = AF_INET;
 	address.sin_port = htons(8888);
 
 	// Connecting
-	SOCKET connection;
 	connection = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (connect(connection, (sockaddr*)&address, sizeof(address)) == INVALID_SOCKET) {
 		std::cerr << "Error!" << std::endl;
+		closesocket(connection);
+		WSACleanup();
 		return 1;
-	}
+	} 
 	else {
-		std::cerr << "Connected!" << std::endl;
+		std::cout << "Connected!" << std::endl;
+	}
+
+	while (true) {
+		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ClientHandler, 0, 0, 0);
 	}
 
 	system("pause");

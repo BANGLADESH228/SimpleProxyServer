@@ -1,8 +1,27 @@
 ﻿#include <iostream>
 #include <ws2tcpip.h>
+#include <string>
 
 #pragma comment (lib, "ws2_32.lib") 
 #pragma warning(disable:4996) 
+
+int counter = 0;
+SOCKET connections[1000];
+
+void ClientHandler(int index) {
+	int msg_size;
+	char msg[256];
+	while (true) {
+		//recv(connections[index], (char*)&msg_size, sizeof(int), 0);
+		//char* msg = new char[msg_size + 1];
+		//msg[msg_size] = '/0';
+		//recv(connections[index], msg, msg_size, 0);
+		recv(connections[index], msg, sizeof(msg), 0);
+		std::cout << msg << std::endl;
+
+		//delete[] msg;
+	}
+}
 
 int main() {
 	// Initialization
@@ -13,6 +32,7 @@ int main() {
 
 	if (wsOk != 0) {
 		std::cerr << "ERROR!" << std::endl;
+		return 1;
 	}
 
 	// Creating
@@ -20,6 +40,9 @@ int main() {
 
 	if (sListen == INVALID_SOCKET) {
 		std::cerr << "ERROR!" << std::endl;
+		closesocket(sListen);
+		WSACleanup();
+		return 1;
 	}
 
 	// Binging
@@ -38,13 +61,22 @@ int main() {
 	int clientSize = sizeof(client);
 
 	SOCKET newConnection;
-	newConnection = accept(sListen, (sockaddr*)&address, &clientSize);
 
-	if (newConnection == INVALID_SOCKET) {
-		std::cerr << "ERROR!" << std::endl;
-	}
-	else {
-		std::cerr << "Cliend connected!" << std::endl;
+	for (int i = 0; i < 1000; ++i) {
+		newConnection = accept(sListen, (sockaddr*)&address, &clientSize);
+
+		if (newConnection == INVALID_SOCKET) {
+			std::cerr << "ERROR!" << std::endl;
+			closesocket(newConnection);
+			WSACleanup();
+			return 1;
+		}
+		else {
+			std::cout << "Cliend connected!" << std::endl;
+			connections[i] = newConnection;
+			counter++;
+			CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ClientHandler, (LPVOID)(i), 0, 0);
+		}
 	}
 
 	system("pause");
