@@ -1,0 +1,4 @@
+﻿  Proxy.cpp
+C:\Users\BANGLADESH\Desktop\SimpleProxyServer\SimpleProxyServer\SimpleProxyServer\Proxy.cpp(14,6): warning C4101: msg_size: неиспользованная локальная переменная
+C:\Users\BANGLADESH\Desktop\SimpleProxyServer\SimpleProxyServer\SimpleProxyServer\Proxy.cpp(105,73): warning C4312: приведение типов: преобразование из "int" в "LPVOID" большего размера
+  SimpleProxyServer.vcxproj -> C:\Users\BANGLADESH\Desktop\SimpleProxyServer\SimpleProxyServer\x64\Debug\SimpleProxyServer.exe

@@ -47,13 +47,15 @@ int main() {
 		return 1;
 	} 
 	else {
-		std::cout << "Connected!" << std::endl;
+		std::cout << "Client: Connected!" << std::endl;
 	}
 
 	while (true) {
 		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ClientHandler, 0, 0, 0);
 	}
 
+	closesocket(connection);
+	WSACleanup();
 	system("pause");
 
 	return 0;

@@ -1,3 +1,1 @@
-﻿  Server.cpp
-C:\Users\BANGLADESH\Desktop\SimpleProxyServer\SimpleProxyServer\SimpleProxyServer\Server.cpp(12,6): warning C4101: msg_size: неиспользованная локальная переменная
-  SimpleProxyServer.vcxproj -> C:\Users\BANGLADESH\Desktop\SimpleProxyServer\SimpleProxyServer\Debug\SimpleProxyServer.exe
+﻿  SimpleProxyServer.vcxproj -> C:\Users\BANGLADESH\Desktop\SimpleProxyServer\SimpleProxyServer\Debug\SimpleProxyServer.exe
