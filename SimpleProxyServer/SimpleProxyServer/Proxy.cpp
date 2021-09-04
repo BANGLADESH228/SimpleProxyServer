@@ -1,6 +1,11 @@
 ﻿#include <iostream>
 #include <ws2tcpip.h>
 #include <string>
+#include <fstream>
+
+#define SERVER_IP "127.0.0.1"
+#define ERROR_S "ERROR!"
+#define DEFAULT_PORT 1606
 
 #pragma comment (lib, "ws2_32.lib") 
 #pragma warning(disable:4996) 
@@ -10,32 +15,34 @@ SOCKET connections[1000];
 SOCKET newConnection;
 SOCKET proxyConnection;
 
-void ClientHandler(int index) {
+void logger(char msg[256]) {
+	std::string path = "logger.txt";
+	std::fstream fs;
+	fs.open(path, std::fstream::in | std::fstream::out | std::fstream::app);
+	fs << msg << "\n";
+	fs.close();
+}
+
+void clientHandler(int index) {
 	int msg_size;
 	char msg[256];
 	while (true) {
-		//recv(connections[index], (char*)&msg_size, sizeof(int), 0);
-		//char* msg = new char[msg_size + 1];
-		//msg[msg_size] = '/0';
-		//recv(connections[index], msg, msg_size, 0);
 		recv(connections[index], msg, sizeof(msg), 0);
 		std::cout << "Client: " << msg << std::endl;
-
-		//delete[] msg;
+		logger(msg);
 	}
+	send(proxyConnection, msg, sizeof(msg), 0);
 }
 
-void ProxyHandler() {
-	//std::string msg;
-	char msg[256];
-	while (true) {
-		//std::getline(std::cin, msg);
-		//int msg_size = msg.size();
-		//send(connection, (char*)&msg_size, sizeof(int), 0);
-		std::cin.getline(msg, sizeof(msg));
-		send(proxyConnection, msg, sizeof(msg), 0);
-	}
-}
+/*
+Написать функцию, которая будет отправлять POST запрос на сайте (curl)
+https ://ru.rakko.tools/tools/36/. Где будет происходить проверка сообщения 
+на синтаксис SQL-запроса. Полученный ответ будет сравниваться в программе.
+Если результат true, то SQL-запрос будет записан в logger файл. В ином
+варианте будет проигнорирован. Результат также отправлять на конечный сервер.
+*/ 
+
+void checkSQL(){}
 
 int main() {
 	// Initialization
@@ -45,7 +52,7 @@ int main() {
 	int wsOk = WSAStartup(version, &wsData);
 
 	if (wsOk != 0) {
-		std::cerr << "ERROR!" << std::endl;
+		std::cerr << ERROR_S << std::endl;
 		return 1;
 	}
 
@@ -53,7 +60,7 @@ int main() {
 	SOCKET sListen = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (sListen == INVALID_SOCKET) {
-		std::cerr << "ERROR!" << std::endl;
+		std::cerr << ERROR_S << std::endl;
 		closesocket(sListen);
 		WSACleanup();
 		return 1;
@@ -61,9 +68,9 @@ int main() {
 
 	// Binging
 	sockaddr_in address;
-	address.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	address.sin_addr.S_un.S_addr = inet_addr(SERVER_IP);
 	address.sin_family = AF_INET;
-	address.sin_port = htons(8888);
+	address.sin_port = htons(DEFAULT_PORT);
 
 	bind(sListen, (sockaddr*)&address, sizeof(address));
 
@@ -77,23 +84,20 @@ int main() {
 	proxyConnection = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (connect(proxyConnection, (sockaddr*)&address, sizeof(address)) == INVALID_SOCKET) {
-		std::cerr << "Error!" << std::endl;
+		std::cerr << ERROR_S << std::endl;
 		closesocket(proxyConnection);
 		WSACleanup();
 		return 1;
 	}
 	else {
 		std::cout << "Proxy: Connected!" << std::endl;
-		/*while (true) {
-			CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ProxyHandler, 0, 0, 0);
-		}*/
 	}
 
 	for (int i = 0; i < 1000; ++i) {
 		newConnection = accept(sListen, (sockaddr*)&address, &clientSize);
 
 		if (newConnection == INVALID_SOCKET) {
-			std::cerr << "ERROR!" << std::endl;
+			std::cerr << ERROR_S << std::endl;
 			closesocket(newConnection);
 			WSACleanup();
 			return 1;
@@ -102,7 +106,7 @@ int main() {
 			std::cout << "Proxy: Client connected!" << std::endl;
 			connections[i] = newConnection;
 			counter++;
-			CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ClientHandler, (LPVOID)(i), 0, 0);
+			CreateThread(0, 0, (LPTHREAD_START_ROUTINE)clientHandler, (LPVOID)(i), 0, 0);
 		}
 	}
 
